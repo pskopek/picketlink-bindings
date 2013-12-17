@@ -52,6 +52,8 @@ import org.picketlink.identity.federation.bindings.jboss.subject.PicketLinkPrinc
 import org.picketlink.identity.federation.core.wstrust.STSClient;
 import org.picketlink.identity.federation.core.wstrust.STSClientConfig;
 import org.picketlink.identity.federation.core.wstrust.STSClientConfig.Builder;
+import org.picketlink.identity.federation.core.wstrust.STSClientCreationCallBack;
+import org.picketlink.identity.federation.core.wstrust.STSClientFactory;
 import org.picketlink.identity.federation.core.wstrust.SamlCredential;
 import org.picketlink.identity.federation.core.wstrust.auth.STSIssuingLoginModule;
 import org.picketlink.identity.federation.core.wstrust.wrappers.RequestSecurityToken;
@@ -92,21 +94,32 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
     }
 
     @Override
-    protected STSClient createWSTrustClient(STSClientConfig config) {
+    protected STSClient createWSTrustClient(final STSClientConfig config) {
         
-        String binaryTokenKey = (String) options.get(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY);
-        if (binaryTokenKey == null) {
-            binaryTokenKey = SecurityActions.getSystemProperty(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY, 
-                    MapBasedTokenHandler.DEFAULT_TOKEN_KEY);
-        }
-        Object binaryToken = sharedState.get(binaryTokenKey);
+        return STSClientFactory.getInstance(maxClientsInPool).create(initialNumberOfClients, new STSClientCreationCallBack() {
+    		@Override
+    		public STSClient createClient() {
+    			
+    	        String binaryTokenKey = (String) options.get(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY);
+    	        if (binaryTokenKey == null) {
+    	            binaryTokenKey = SecurityActions.getSystemProperty(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY, 
+    	                    MapBasedTokenHandler.DEFAULT_TOKEN_KEY);
+    	        }
+    	        Object binaryToken = sharedState.get(binaryTokenKey);
 
-        Map<String, ? super Object> STSClientOptions = new HashMap<String, Object> (options);
-        if (binaryToken != null) {
-            STSClientOptions.put(binaryTokenKey, binaryToken);
-        }
-        
-        return new JBWSTokenClient(config, STSClientOptions);
+    	        Map<String, ? super Object> STSClientOptions = new HashMap<String, Object> (options);
+    	        if (binaryToken != null) {
+    	            STSClientOptions.put(binaryTokenKey, binaryToken);
+    	        }
+    			
+    			return new JBWSTokenClient(config, STSClientOptions);
+    		}
+
+    		@Override
+    		public String getKey() {
+    			return config.getServiceName() + "|" + config.getPortName() + "|" + config.getEndPointAddress();
+    		}
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -329,4 +342,5 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
         }
 
     }
+    
 }
