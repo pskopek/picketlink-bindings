@@ -74,6 +74,10 @@
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
+            <excludes>
+              <exclude>**/org/picketlink/social/openid/*.java</exclude>
+              <exclude>**/org/picketlink/social/openid/providers/*.java</exclude>
+            </excludes>
           </configuration>
         </plugin>
         <plugin>

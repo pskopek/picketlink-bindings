@@ -28,12 +28,6 @@
 			<artifactId>picketlink-federation</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-        <dependency>
-            <groupId>org.picketlink</groupId>
-            <artifactId>picketlink-social</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 		<dependency>
 			<groupId>org.picketlink</groupId>
 			<artifactId>picketlink-tomcat-common</artifactId>
