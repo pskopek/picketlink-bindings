@@ -106,7 +106,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
         super.startPicketLink();
         initKeyProvider(context);
     }
-    
+
     /**
      * <p>
      * Send the request to the IDP. Subclasses should override this method to implement how requests must be sent to the IDP.
@@ -121,7 +121,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
      * @throws ProcessingException
      * @throws ConfigurationException
      * @throws IOException
-     */ 
+     */
     protected void sendRequestToIDP(String destination, Document samlDocument, String relayState, Response response,
             boolean willSendRequest, String destinationQueryStringWithSignature) throws ProcessingException, ConfigurationException, IOException {
         if (isHttpPostBinding()) {
@@ -291,7 +291,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
                 logger.trace("Restoring request from session '" + session.getIdInternal() + "'");
                 Principal savedPrincipal = (Principal)session.getNote(Constants.FORM_PRINCIPAL_NOTE);
                 register (request, response, savedPrincipal, Constants.FORM_METHOD, (String)session.getNote(Constants.SESS_USERNAME_NOTE), (String)session.getNote(Constants.SESS_PASSWORD_NOTE));
-                
+
                 // try to restore the original request (including post data, etc...)
                 if (restoreRequest(request, session)) {
                     // success!  user is authenticated; continue processing original request
@@ -305,7 +305,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
                     return false;
                 }
             }
-            
+
             // Eagerly look for Local LogOut
             boolean localLogout = isLocalLogout(request);
 
@@ -480,7 +480,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
         try {
             ServiceProviderSAMLResponseProcessor responseProcessor = new ServiceProviderSAMLResponseProcessor(request.getMethod().equals("POST"), serviceURL, this.picketLinkConfiguration);
             if(auditHelper !=  null){
-                responseProcessor.setAuditHelper(auditHelper);   
+                responseProcessor.setAuditHelper(auditHelper);
             }
 
             responseProcessor.setTrustKeyManager(keyManager);
@@ -518,7 +518,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
                 String password = ServiceProviderSAMLContext.EMPTY_PASSWORD;
 
                 if (logger.isTraceEnabled()) {
-                    logger.trace("Roles determined for username=" + username + "=" + Arrays.toString(roles.toArray()));                    
+                    logger.trace("Roles determined for username=" + username + "=" + Arrays.toString(roles.toArray()));
                 }
 
                 // Map to JBoss specific principal
@@ -543,14 +543,14 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
                     auditEvent.setWhoIsAuditing(getContextPath());
                     auditHelper.audit(auditEvent);
                 }
-                
+
                 // Redirect the user to the originally requested URL
                 if (saveRestoreRequest) {
                     // Store the authenticated principal in the session.
                     session.setNote(Constants.FORM_PRINCIPAL_NOTE, principal);
-                    
+
                     // Redirect to the original URL.  Note that this will trigger the
-                    // authenticator again, but on resubmission we will look in the 
+                    // authenticator again, but on resubmission we will look in the
                     // session notes to retrieve the authenticated principal and
                     // prevent reauthentication
                     String requestURI = savedRequestURL(session);
@@ -562,7 +562,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
                     logger.trace("Redirecting back to original Request URI: " + requestURI);
                     response.sendRedirect(response.encodeRedirectURL(requestURI));
                 }
-                
+
                 register(request, response, principal, Constants.FORM_METHOD, username, password);
                 return true;
             }
@@ -618,7 +618,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
         return spConfiguration.isIdpUsesPostBinding();
     }
 
-     
+
     /*
      * (non-Javadoc)
      *
@@ -654,7 +654,13 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
             if (issuerID != null)
                 baseProcessor.setIssuer(issuerID);
 
-            baseProcessor.setIdentityURL(identityURL);
+            // If the user has a different desired idp
+            String idp = (String) request.getAttribute(DESIRED_IDP);
+            if (StringUtil.isNotNull(idp)) {
+                baseProcessor.setIdentityURL(idp);
+            } else {
+                baseProcessor.setIdentityURL(identityURL);
+            }
             baseProcessor.setAuditHelper(auditHelper);
 
             saml2HandlerResponse = baseProcessor.process(httpContext, handlers, chainLock);
@@ -718,14 +724,14 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
     public boolean restoreRequest(Request request, Session session) throws IOException {
         return super.restoreRequest(request, session);
     }
-    
+
     /**
      * Subclasses need to return the context path
      * based on the capability of their servlet api
      * @return
      */
     protected abstract String getContextPath();
-    
+
     protected Principal getGenericPrincipal(Request request, String username, List<String> roles){
         return (new SPUtil()).createGenericPrincipal(request, username, roles);
     }
