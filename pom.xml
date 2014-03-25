@@ -39,18 +39,47 @@
     </jboss.snapshots.repo.url>
   </properties>
 
-  <modules>
-    <module>picketlink-tomcat-common</module>
-    <module>picketlink-tomcat5</module>
-    <module>picketlink-tomcat7</module>
-    <module>picketlink-jbas-common</module>
-    <module>picketlink-jbas5</module>
-    <module>picketlink-jbas7</module>
-    <module>build-tomcat5</module>
-    <module>build-tomcat7</module>
-    <module>build-jbas5</module>
-    <module>build-jbas7</module>
-  </modules>
+  <profiles>
+    <profile>
+      <id>all</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+        <property>
+          <name>release</name>
+        </property>
+      </activation>
+      <modules>
+        <module>picketlink-tomcat-common</module>
+        <module>picketlink-tomcat5</module>
+        <module>picketlink-tomcat7</module>
+        <module>picketlink-jbas-common</module>
+        <module>picketlink-jbas5</module>
+        <module>picketlink-jbas7</module>
+        <module>build-tomcat5</module>
+        <module>build-tomcat7</module>
+        <module>build-jbas5</module>
+        <module>build-jbas7</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>eap6</id>
+      <modules>
+        <module>picketlink-tomcat-common</module>
+        <module>picketlink-tomcat5</module>
+        <module>picketlink-jbas-common</module>
+        <module>picketlink-jbas7</module>
+        <module>build-jbas7</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>release</id>
+      <activation>
+        <property>
+          <name>release</name>
+        </property>
+      </activation>
+    </profile>
+  </profiles>
 
   <dependencyManagement>
     <dependencies>
@@ -194,17 +223,6 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>release</id>
-      <activation>
-        <property>
-          <name>release</name>
-        </property>
-      </activation>
-    </profile>
-  </profiles>
 
   <scm>
     <connection>scm:git:git://github.com/picketlink/picketlink-bindings.git</connection>
