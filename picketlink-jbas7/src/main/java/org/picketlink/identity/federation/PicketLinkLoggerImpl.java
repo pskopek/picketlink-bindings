@@ -1623,5 +1623,8 @@ public final class PicketLinkLoggerImpl implements PicketLinkLogger {
 		return MESSAGES.removingNonExistingClientFromUsedClientsByKey(key);
 	}
 
+    public RuntimeException cannotSetMaxPoolSizeToNegative(String max) {
+        return MESSAGES.cannotSetMaxPoolSizeToNegative(max);
+    }
 
 }

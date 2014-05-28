@@ -96,7 +96,7 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
     @Override
     protected STSClient createWSTrustClient(final STSClientConfig config) {
         try {
-	        return STSClientFactory.getInstance(maxClientsInPool).create(initialNumberOfClients, new STSClientCreationCallBack() {
+	        return STSClientFactory.getInstance(maxClientsInPool).createPool(initialNumberOfClients, new STSClientCreationCallBack() {
 	    		@Override
 	    		public STSClient createClient() {
 	    			

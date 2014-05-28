@@ -529,5 +529,9 @@ public interface PicketLinkMessages {
     RuntimeException removingNonExistingClientFromUsedClientsByKey(String key); 
     
     @Message(id = 186, value = "Pool reached miximum number of clients within the pool (%s)")
-    RuntimeException maximumNumberOfClientsReachedforPool(String max); 
+    RuntimeException maximumNumberOfClientsReachedforPool(String max);
+    
+    @Message(id = 187, value = "Cannot set maximum STS client pool size to negative number (%s)")
+    RuntimeException cannotSetMaxPoolSizeToNegative(String max);
+
 }

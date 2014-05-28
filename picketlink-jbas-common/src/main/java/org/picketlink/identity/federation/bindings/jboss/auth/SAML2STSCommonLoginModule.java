@@ -517,7 +517,7 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
         STSClient client = null;
         if (rawOptions.containsKey(STS_CONFIG_FILE)) {
             builder = new Builder(this.stsConfigurationFile);
-            client = STSClientFactory.getInstance(maxClientsInPool).create(initialNumberOfClients, builder.build());
+            client = STSClientFactory.getInstance(maxClientsInPool).createPool(initialNumberOfClients, builder.build());
         } else {
             builder = new Builder();
             builder.endpointAddress((String) rawOptions.get(ENDPOINT_ADDRESS));
@@ -542,7 +542,7 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
                     throw logger.unableToDecodePasswordError(passwordString);
                 }
             }
-            client = STSClientFactory.getInstance(maxClientsInPool).create(initialNumberOfClients, builder.build());
+            client = STSClientFactory.getInstance(maxClientsInPool).createPool(initialNumberOfClients, builder.build());
         }
 
         // if the login module options map still contains any properties, assume they are for configuring the connection
