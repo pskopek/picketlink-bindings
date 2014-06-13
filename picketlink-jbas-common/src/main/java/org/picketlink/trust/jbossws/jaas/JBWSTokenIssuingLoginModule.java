@@ -70,7 +70,6 @@ import org.w3c.dom.Element;
  * @author Anil.Saldhana@redhat.com
  * @since Apr 22, 2011
  */
-@SuppressWarnings("restriction")
 public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
@@ -96,30 +95,33 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
     @Override
     protected STSClient createWSTrustClient(final STSClientConfig config) {
         try {
-	        return STSClientFactory.getInstance(maxClientsInPool).createPool(initialNumberOfClients, new STSClientCreationCallBack() {
+
+            STSClientFactory cf = STSClientFactory.getInstance(maxClientsInPool);
+	        cf.createPool(initialNumberOfClients, new STSClientCreationCallBack() {
 	    		@Override
 	    		public STSClient createClient() {
-	    			
+
 	    	        String binaryTokenKey = (String) options.get(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY);
 	    	        if (binaryTokenKey == null) {
-	    	            binaryTokenKey = SecurityActions.getSystemProperty(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY, 
+	    	            binaryTokenKey = SecurityActions.getSystemProperty(MapBasedTokenHandler.SYS_PROP_TOKEN_KEY,
 	    	                    MapBasedTokenHandler.DEFAULT_TOKEN_KEY);
 	    	        }
 	    	        Object binaryToken = sharedState.get(binaryTokenKey);
-	
+
 	    	        Map<String, ? super Object> STSClientOptions = new HashMap<String, Object> (options);
 	    	        if (binaryToken != null) {
 	    	            STSClientOptions.put(binaryTokenKey, binaryToken);
 	    	        }
-	    			
+
 	    			return new JBWSTokenClient(config, STSClientOptions);
 	    		}
-	
+
 	    		@Override
 	    		public String getKey() {
-	    			return config.getServiceName() + "|" + config.getPortName() + "|" + config.getEndPointAddress();
+	    			return  STSClientConfig.computeSTSClientConfigKey(config.getServiceName(), config.getPortName(), config.getEndPointAddress(), config.getUsername());
 	    		}
 	        });
+	        return cf.getClient(config);
         } catch (final Exception e) {
             throw logger.authCouldNotCreateWSTrustClient(e);
         }
@@ -156,7 +158,7 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
          * Indicates request type, could be either {@link WSTrustConstants.ISSUE_REQUEST} or {@link WSTrustConstants.VALIDATE_REQUEST}.
          */
         private String requestType = WSTrustConstants.ISSUE_REQUEST;
-        
+
         private DatatypeFactory dataTypefactory;
 
         public JBWSTokenClient() {
@@ -172,25 +174,25 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
         public JBWSTokenClient(STSClientConfig config) {
             super(config);
             requestType = config.getRequestType();
-            
+
             try {
                 this.dataTypefactory = DatatypeFactory.newInstance();
             } catch (DatatypeConfigurationException dce) {
                 throw logger.wsTrustUnableToGetDataTypeFactory(dce);
             }
         }
-        
+
 
         @SuppressWarnings("rawtypes")
         public JBWSTokenClient(STSClientConfig config, Map<String, ? super Object> options) {
             super(config);
-        
+
             try {
                 this.dataTypefactory = DatatypeFactory.newInstance();
             } catch (DatatypeConfigurationException dce) {
                 throw logger.wsTrustUnableToGetDataTypeFactory(dce);
             }
-            
+
             requestType = (String) options.get(STSClientConfig.REQUEST_TYPE);
             if (requestType == null) {
                 requestType = config.getRequestType();
@@ -200,8 +202,8 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
             if (soapBinding != null) {
                 setSoapBinding(soapBinding);
             }
-            
-            
+
+
             // Get pre-constructed Dispatch from super
             Dispatch<Source> dispatch = super.getDispatch();
 
@@ -222,7 +224,7 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
             List<Handler> handlers = binding.getHandlerChain();
 
             String handlerStr = (String) options.get("handlerChain");
-            
+
             if (StringUtil.isNotNull(handlerStr)) {
                 List<String> tokens = StringUtil.tokenize(handlerStr);
                 for (String token : tokens) {
@@ -291,11 +293,11 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
                 }
             }
         }
-        
+
         @Override
         public Element issueToken(RequestSecurityToken request)
                 throws WSTrustException {
-            
+
             if (requestType.equals(WSTrustConstants.VALIDATE_REQUEST)) {
                 request.setRequestType(URI.create(requestType));
                 ValidateTargetType validateTarget = new ValidateTargetType();
@@ -303,27 +305,27 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
                 try {
                     String sUserName = JBWSTokenIssuingLoginModule.this.getSharedUsername();
                     char[] cPassword = JBWSTokenIssuingLoginModule.this.getSharedPassword();
-                    Element wsseUsernameToken = createUsernameToken(sUserName, 
-                            (cPassword != null ? new String(cPassword) : null)); 
+                    Element wsseUsernameToken = createUsernameToken(sUserName,
+                            (cPassword != null ? new String(cPassword) : null));
                     validateTarget.add(wsseUsernameToken);
                     request.setValidateTarget(validateTarget);
                 }
                 catch (SOAPException e) {
                     throw new WSTrustException(e);
                 }
-            }            
-            
+            }
+
             return super.issueToken(request);
-            
+
         }
 
         private Element createUsernameToken(String usernameValue, String passwordValue) throws SOAPException {
-            
+
             QName usernameTokenName = new QName(Constants.WSSE_NS, Constants.WSSE_USERNAME_TOKEN, Constants.WSSE_PREFIX);
             QName usernameName = new QName(Constants.WSSE_NS, Constants.WSSE_USERNAME, Constants.WSSE_PREFIX);
             QName passwordName = new QName(Constants.WSSE_NS, Constants.WSSE_PASSWORD, Constants.WSSE_PREFIX);
             QName createdName = new QName(Constants.WSU_NS, "Created", Constants.WSU_PREFIX);
-            
+
             SOAPFactory factory = SOAPFactory.newInstance();
             SOAPElement usernametoken = factory.createElement(usernameTokenName);
             usernametoken.addNamespaceDeclaration(Constants.WSSE_PREFIX, Constants.WSSE_NS);
@@ -337,7 +339,7 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
             SOAPElement created = factory.createElement(createdName);
             XMLGregorianCalendar createdCal = dataTypefactory.newXMLGregorianCalendar(new GregorianCalendar()).normalize();
             created.addTextNode(createdCal.toXMLFormat());
-            
+
             usernametoken.addChildElement(username);
             usernametoken.addChildElement(password);
             usernametoken.addChildElement(created);
@@ -345,5 +347,5 @@ public class JBWSTokenIssuingLoginModule extends STSIssuingLoginModule {
         }
 
     }
-    
+
 }

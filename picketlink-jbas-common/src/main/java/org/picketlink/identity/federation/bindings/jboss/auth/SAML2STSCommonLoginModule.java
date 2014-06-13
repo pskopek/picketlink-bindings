@@ -52,6 +52,7 @@ import org.picketlink.identity.federation.core.constants.PicketLinkFederationCon
 import org.picketlink.identity.federation.core.factories.JBossAuthCacheInvalidationFactory.TimeCacheExpiry;
 import org.picketlink.identity.federation.core.saml.v2.util.AssertionUtil;
 import org.picketlink.identity.federation.core.wstrust.STSClient;
+import org.picketlink.identity.federation.core.wstrust.STSClientConfig;
 import org.picketlink.identity.federation.core.wstrust.STSClientFactory;
 import org.picketlink.identity.federation.core.wstrust.STSClientConfig.Builder;
 import org.picketlink.identity.federation.core.wstrust.SamlCredential;
@@ -141,7 +142,7 @@ import org.w3c.dom.Element;
  */
 @SuppressWarnings("unchecked")
 public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequestAbstractLoginModule {
-    
+
     protected String stsConfigurationFile;
 
     protected Principal principal;
@@ -164,13 +165,13 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
      * Maximal number of clients in the STS Client Pool.
      */
     protected int maxClientsInPool = 0;
-    
+
     /**
-     * Number of clients initialized for in case pool is out of free clients. 
+     * Number of clients initialized for in case pool is out of free clients.
      */
     protected int initialNumberOfClients = 0;
 
-    
+
     /**
      * Options that are computed by this login module. Few options are removed and the rest are set in the dispatch sts call
      */
@@ -265,7 +266,7 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
                logger.error(ErrorCodes.LOCAL_VALIDATION_SEC_DOMAIN_MUST_BE_SPECIFIED);
                throw logger.optionNotSet("localValidationSecurityDomain");
             }
-            
+
             if (localValidationSecurityDomain.startsWith("java:") == false)
                 localValidationSecurityDomain = SecurityConstants.JAAS_CONTEXT_ROOT + "/" + localValidationSecurityDomain;
 
@@ -283,7 +284,7 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
                 logger.cannotParseParameterValue(MAX_CLIENTS_IN_POOL, e);
             }
         }
-        
+
         String initialNumberOfClientsString = (String) options.get(INITIAL_NUMBER_OF_CLIENTS);
         if (StringUtil.isNotNull(initialNumberOfClientsString)) {
             try {
@@ -292,8 +293,8 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
                 logger.cannotParseParameterValue(INITIAL_NUMBER_OF_CLIENTS, e);
             }
         }
-        
-        
+
+
     }
 
     /*
@@ -333,11 +334,11 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
             }
             else {
                 super.callbackHandler.handle(new Callback[] { callback });
-                
+
                 if (callback.getCredential() instanceof String) {
                     callback.setCredential(new SamlCredential(DocumentUtil.getDocument(callback.getCredential().toString()).getDocumentElement()));
                 }
-                
+
                 if (callback.getCredential() instanceof SamlCredential == false)
                     throw logger.authSharedCredentialIsNotSAMLCredential(callback.getCredential().getClass().getName());
                 this.credential = (SamlCredential) callback.getCredential();
@@ -346,8 +347,8 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
         } catch (Exception e) {
             throw logger.authErrorHandlingCallback(e);
         }
-    
-        
+
+
         // if there is no shared data, validate the assertion using the STS.
         if (localValidation) {
             logger.trace("Local Validation is being Performed");
@@ -417,8 +418,8 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
         }
         return (super.loginOk = true);
     }
-    
-    
+
+
 
     /* (non-Javadoc)
      * @see org.jboss.security.auth.spi.AbstractServerLoginModule#commit()
@@ -517,7 +518,6 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
         STSClient client = null;
         if (rawOptions.containsKey(STS_CONFIG_FILE)) {
             builder = new Builder(this.stsConfigurationFile);
-            client = STSClientFactory.getInstance(maxClientsInPool).createPool(initialNumberOfClients, builder.build());
         } else {
             builder = new Builder();
             builder.endpointAddress((String) rawOptions.get(ENDPOINT_ADDRESS));
@@ -542,8 +542,12 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
                     throw logger.unableToDecodePasswordError(passwordString);
                 }
             }
-            client = STSClientFactory.getInstance(maxClientsInPool).createPool(initialNumberOfClients, builder.build());
+
         }
+        STSClientFactory cf = STSClientFactory.getInstance(maxClientsInPool);
+        STSClientConfig config = builder.build();
+        cf.createPool(initialNumberOfClients, config);
+        client = cf.getClient(config);
 
         // if the login module options map still contains any properties, assume they are for configuring the connection
         // to the STS and set them in the Dispatch request context.
@@ -554,7 +558,7 @@ public abstract class SAML2STSCommonLoginModule extends SAMLTokenFromHttpRequest
         }
         return client;
     }
-    
+
     /**
      * Locally validate the SAML Assertion element
      *
