@@ -20,7 +20,6 @@ package org.picketlink.identity.federation.bindings.stspool;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-
 import org.picketlink.common.PicketLinkLogger;
 import org.picketlink.common.PicketLinkLoggerFactory;
 import org.picketlink.identity.federation.bindings.util.ModuleUtils;
@@ -67,7 +66,7 @@ class STSClientPoolInternal {
             return;
         }
 
-        
+
         String key = null;
         if (clientCreationCallBack != null) {
             key = substituteKey(clientCreationCallBack.getKey());
@@ -111,7 +110,7 @@ class STSClientPoolInternal {
         inUse.remove(key);
         configs.remove(key);
     }
-    
+
     synchronized void destroy(String moduleName) {
         String module = moduleName;
         if (moduleName == null || moduleName.isEmpty()) {
@@ -122,7 +121,7 @@ class STSClientPoolInternal {
         removeByPrefix(module, inUse);
         removed += removeByPrefix(module, configs);
         if (removed == 0) {
-            // fallback to modified prefix 
+            // fallback to modified prefix
             module = "deployment." + module;
             removeByPrefix(module, free);
             removeByPrefix(module, inUse);
@@ -146,7 +145,10 @@ class STSClientPoolInternal {
                 throw logger.cannotGetSTSConfigByKey(substKey);
             }
             if (configData.callBack != null) {
-                internalInitialize(DEFAULT_NUM_STS_CLIENTS, null, configs.get(substKey).callBack);
+                internalInitialize(DEFAULT_NUM_STS_CLIENTS, null, configData.callBack);
+            }
+            else if (configData.config != null) {
+                internalInitialize(DEFAULT_NUM_STS_CLIENTS, configData.config, configData.callBack);
             }
             client = takeOutInternal(substKey);
         }
@@ -239,10 +241,16 @@ class STSClientPoolInternal {
 
     private synchronized void putInInternal(String key, STSClient client) {
         // no key substitution
+        STSConfigData configData = configs.get(key);
+        if (configData == null) {
+            // attempt to return client not from pool, we can silently ignore it
+            return;
+        }
+
         ArrayList<STSClient> freeClients = free.get(key);
         ArrayList<STSClient> usedClients = inUse.get(key);
 
-        if (!usedClients.remove(client)) {
+        if (usedClients != null && !usedClients.remove(client)) {
             // removing non existing client from used clients by key:
             throw logger.removingNonExistingClientFromUsedClientsByKey(key);
         }
@@ -254,7 +262,7 @@ class STSClientPoolInternal {
     private String key(STSClientConfig stsClientConfig) {
         return substituteKey(stsClientConfig.getSTSClientConfigKey());
     }
-    
+
     private String substituteKey(String originalKey) {
         if (originalKey != null && originalKey.indexOf(STSClientConfig.SUBSTITUTE_MODULE) != -1) {
             return originalKey.replaceAll("\\Q" + STSClientConfig.SUBSTITUTE_MODULE + "\\E", ModuleUtils.getCurrentModuleId());
@@ -274,7 +282,7 @@ class STSClientPoolInternal {
         }
         return num;
     }
-    
+
 }
 
 class STSConfigData {
