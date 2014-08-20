@@ -373,7 +373,13 @@ public abstract class AbstractIDPValve extends ValveBase {
         if (userPrincipal != null) {
             handleSAMLMessage(request, response);
         }
-        getNext().invoke(request, response);
+
+        try {
+          getNext().invoke(request, response);
+        } catch (IllegalStateException ignore) {
+          // probably because the response was already commited, but we still need to
+          // invoke next valve. For instance, when in a clustered environment.
+        }
     }
 
     /**
