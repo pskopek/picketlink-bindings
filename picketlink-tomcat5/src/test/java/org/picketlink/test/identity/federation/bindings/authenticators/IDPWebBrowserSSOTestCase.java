@@ -30,6 +30,7 @@ import static junit.framework.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -504,6 +505,8 @@ public class IDPWebBrowserSSOTestCase {
 
             AuthnRequestType authnRequestType = samlRequest.createAuthnRequestType(IDGenerator.create("ID_"),
                   assertionConsumerURL, getAuthenticator().getConfiguration().getIdpOrSP().getIdentityURL(), issuer);
+
+            authnRequestType.setProtocolBinding(URI.create(JBossSAMLURIConstants.SAML_HTTP_REDIRECT_BINDING.get()));
 
             Document authnRequestDocument = samlRequest.convert(authnRequestType);
 
