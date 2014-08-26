@@ -22,6 +22,9 @@
 
 package org.picketlink.test.identity.federation.bindings.authenticators;
 
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.valves.ValveBase;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -74,6 +77,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.servlet.ServletException;
 /**
  * <p>
  * Test class for the IDP authenticator {@link IDPWebBrowserSSOValve}.
@@ -540,6 +544,12 @@ public class IDPWebBrowserSSOTestCase {
     private IDPWebBrowserSSOValve getAuthenticator() {
         if (this.identityProvider == null) {
             this.identityProvider = AuthenticatorTestUtils.createIdentityProvider("saml2/redirect/idp-sig");
+            this.identityProvider.setNext(new ValveBase() {
+                @Override
+                public void invoke(Request request, Response response) throws IOException, ServletException {
+
+                }
+            });
         }
 
         return this.identityProvider;
