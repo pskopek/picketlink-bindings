@@ -21,20 +21,18 @@
  */
 package org.picketlink.test.identity.federation.bindings.mock;
 
+import org.apache.catalina.Session;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpSession;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpSession;
-
-import org.apache.catalina.Session;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
 
 /**
  * Request for catalina container
@@ -216,5 +214,10 @@ public class MockCatalinaRequest extends Request {
     private Enumeration getEmptyEnumeration(){
         Vector vector = new Vector();
         return vector.elements();
+    }
+
+    @Override
+    public Map getParameterMap() {
+        return params;
     }
 }

@@ -206,7 +206,7 @@ public class SAML2LogoutTomcatWorkflowUnitTestCase {
         String destination = redirectStr.substring(0, redirectStr.indexOf(SAML_REQUEST_KEY) - 1);
         String relayState = redirectStr.substring(redirectStr.indexOf(RELAY_STATE_KEY) + RELAY_STATE_KEY.length());
         String logoutRequest = redirectStr.substring(redirectStr.indexOf(SAML_REQUEST_KEY) + SAML_REQUEST_KEY.length(),
-                redirectStr.indexOf(RELAY_STATE_KEY) - 1);
+            redirectStr.indexOf(RELAY_STATE_KEY) - 1);
 
         InputStream stream = RedirectBindingUtil.urlBase64DeflateDecode(logoutRequest);
 
@@ -244,7 +244,7 @@ public class SAML2LogoutTomcatWorkflowUnitTestCase {
         relayState = redirectStr.substring(redirectStr.indexOf(RELAY_STATE_KEY) + RELAY_STATE_KEY.length());
         assertNotNull("RelayState exists", relayState);
         String logoutResponse = redirectStr.substring(redirectStr.indexOf(SAML_RESPONSE_KEY) + SAML_RESPONSE_KEY.length(),
-                redirectStr.indexOf(RELAY_STATE_KEY) - 1);
+            redirectStr.indexOf(RELAY_STATE_KEY) - 1);
 
         stream = RedirectBindingUtil.urlBase64DeflateDecode(logoutResponse);
         StatusResponseType statusResponse = (StatusResponseType) saml2Request.getSAML2ObjectFromStream(stream);
@@ -271,7 +271,7 @@ public class SAML2LogoutTomcatWorkflowUnitTestCase {
         destination = redirectStr.substring(0, redirectStr.indexOf(SAML_RESPONSE_KEY) - 1);
         relayState = redirectStr.substring(redirectStr.indexOf(RELAY_STATE_KEY) + RELAY_STATE_KEY.length());
         logoutResponse = redirectStr.substring(redirectStr.indexOf(SAML_RESPONSE_KEY) + SAML_RESPONSE_KEY.length(),
-                redirectStr.indexOf(RELAY_STATE_KEY) - 1);
+            redirectStr.indexOf(RELAY_STATE_KEY) - 1);
 
         stream = RedirectBindingUtil.urlBase64DeflateDecode(logoutResponse);
 

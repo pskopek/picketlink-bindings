@@ -25,24 +25,6 @@ package org.picketlink.test.identity.federation.bindings.authenticators;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.stream.StreamResult;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.picketlink.common.constants.GeneralConstants;
@@ -78,6 +60,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.servlet.ServletException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 /**
  * <p>
  * Test class for the IDP authenticator {@link IDPWebBrowserSSOValve}.
@@ -517,6 +515,7 @@ public class IDPWebBrowserSSOTestCase {
             logger.info("AuthRequestType:" + prettyPrintDocument(authnRequestDocument).toString());
 
             if (signToken) {
+                request.setParameter(GeneralConstants.SAML_SIGNATURE_REQUEST_KEY, "");
                 request.setQueryString(RedirectBindingSignatureUtil.getSAMLRequestURLWithSignature(authnRequestType, null,
                         getAuthenticator().getKeyManager().getSigningKey()));
                 AuthenticatorTestUtils.populateParametersWithQueryString(request.getQueryString(), request);
