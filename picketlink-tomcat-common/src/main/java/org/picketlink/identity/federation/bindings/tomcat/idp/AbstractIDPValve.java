@@ -493,7 +493,7 @@ public abstract class AbstractIDPValve extends ValveBase {
      */
     private void includeResource(ServletRequest request, Response response, RequestDispatcher dispatch)
             throws ServletException, IOException {
-        dispatch.include(request, response);
+        dispatch.forward(request, response);
 
         // we need to re-configure the content length because Tomcat will truncate the output with the size of the welcome page
         // (eg.: index.html).
