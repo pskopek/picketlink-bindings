@@ -17,20 +17,14 @@
  */
 package org.picketlink.identity.federation.bindings.tomcat.sp;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-
 import org.apache.catalina.Context;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Session;
-import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.valves.ValveBase;
 import org.picketlink.common.PicketLinkLogger;
 import org.picketlink.common.PicketLinkLoggerFactory;
@@ -38,13 +32,21 @@ import org.picketlink.common.constants.GeneralConstants;
 import org.picketlink.common.util.StringUtil;
 import org.picketlink.identity.federation.bindings.tomcat.sp.plugins.PropertiesAccountMapProvider;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * PLINK-344: Account Chooser At the Service Provider to enable redirection to the appropriate IDP
  *
  * @author Anil Saldhana
  * @since January 21, 2014
  */
-public abstract class AbstractAccountChooserValve extends ValveBase{
+public abstract class AbstractAccountChooserValve extends ValveBase implements Lifecycle {
     protected static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
 
     public static final String ACCOUNT_CHOOSER_COOKIE_NAME = "picketlink.account.name";
@@ -64,13 +66,58 @@ public abstract class AbstractAccountChooserValve extends ValveBase{
 
     protected ConcurrentHashMap<String, String> idpMap = new ConcurrentHashMap<String, String>();
 
-    protected AccountIDPMapProvider accountIDPMapProvider = new PropertiesAccountMapProvider();
+    private String accountIDPMapProviderName = PropertiesAccountMapProvider.class.getName();
+    protected AccountIDPMapProvider accountIDPMapProvider;
 
     /**
      * Sets the account chooser cookie expiry. By default, we choose -1 which means
      * cookie exists for the remainder of the browser session.
      */
     protected int cookieExpiry = -1;
+
+    /**
+     * The lifecycle event support for this component.
+     */
+    protected LifecycleSupport lifecycle = new LifecycleSupport(this);
+
+    @Override
+    public void start() throws LifecycleException {
+        try {
+            Class<?> clazz = SecurityActions.loadClass(getClass(), this.accountIDPMapProviderName);
+
+            if (clazz == null) {
+                throw logger.classNotLoadedError(this.accountIDPMapProviderName);
+            }
+
+            accountIDPMapProvider = (AccountIDPMapProvider) clazz.newInstance();
+
+            Context context = (Context) getContainer();
+            accountIDPMapProvider.setServletContext(context.getServletContext());
+            idpMap.putAll(accountIDPMapProvider.getIDPMap());
+        } catch (Exception e) {
+            throw new LifecycleException("Could not start " + getClass().getName() + ".", e);
+        }
+    }
+
+    @Override
+    public void stop() throws LifecycleException {
+
+    }
+
+    @Override
+    public void removeLifecycleListener(LifecycleListener listener) {
+        lifecycle.removeLifecycleListener(listener);
+    }
+
+    @Override
+    public LifecycleListener[] findLifecycleListeners() {
+        return lifecycle.findLifecycleListeners();
+    }
+
+    @Override
+    public void addLifecycleListener(LifecycleListener listener) {
+        lifecycle.addLifecycleListener(listener);
+    }
 
     /**
      * Set the domain name for the cookie to be sent to the browser
@@ -105,16 +152,7 @@ public abstract class AbstractAccountChooserValve extends ValveBase{
      * @param idpMapProviderName
      */
     public void setAccountIDPMapProvider(String idpMapProviderName){
-        if(StringUtil.isNotNull(idpMapProviderName)){
-            Class<?> clazz = SecurityActions.loadClass(getClass(),idpMapProviderName);
-            try {
-                accountIDPMapProvider = (AccountIDPMapProvider) clazz.newInstance();
-            } catch (InstantiationException e) {
-                logger.processingError(e);
-            } catch (IllegalAccessException e) {
-                logger.processingError(e);
-            }
-        }
+        this.accountIDPMapProviderName = idpMapProviderName;
     }
 
     /**
@@ -126,20 +164,6 @@ public abstract class AbstractAccountChooserValve extends ValveBase{
      */
     public void setAccountChooserPage(String pageName) {
         this.accountChooserPage = pageName;
-    }
-
-
-    @Override
-    public void setNext(Valve valve) {
-        super.setNext(valve);
-        //Let us populate the IDP Provider Map
-        try {
-            Context context = (Context) getContainer();
-            accountIDPMapProvider.setServletContext(context.getServletContext());
-            idpMap.putAll(accountIDPMapProvider.getIDPMap());
-        } catch (IOException e) {
-            logger.processingError(e);
-        }
     }
 
     @Override
