@@ -190,6 +190,14 @@ public final class PicketLinkLoggerImpl implements PicketLinkLogger {
         return MESSAGES.keyStoreNullSigningKeyPass();
     }
 
+
+    /* (non-Javadoc)
+     * @see org.picketlink.identity.federation.PicketLinkLogger#keyStoreNullEncryptionKeyPass()
+     */
+    public RuntimeException keyStoreNullEncryptionKeyPass() {
+        return MESSAGES.keyStoreNullSigningKeyPass();
+    }
+
     /* (non-Javadoc)
      * @see org.picketlink.identity.federation.PicketLinkLogger#keyStoreNotLocated(java.lang.String)
      */
