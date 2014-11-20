@@ -11,11 +11,17 @@ import org.jboss.security.CacheableManager;
 import org.jboss.security.SecurityConstants;
 import org.picketlink.common.PicketLinkLogger;
 import org.picketlink.common.PicketLinkLoggerFactory;
+import org.picketlink.identity.federation.core.constants.PicketLinkFederationConstants;
 import org.picketlink.identity.federation.core.factories.JBossAuthCacheInvalidationFactory.TimeCacheExpiry;
 
 public class AS7AuthCacheInvalidationFactory {
 
     public static TimeCacheExpiry getCacheExpiry() {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(PicketLinkFederationConstants.RUNTIME_PERMISSION_CORE);
+        }
+
         return AS7ExpiringPrincipalCacheInvalidation.get();
     }
 
