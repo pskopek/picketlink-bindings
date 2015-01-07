@@ -30,6 +30,7 @@ import javax.security.auth.Subject;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.security.SecurityContext;
 import org.picketlink.identity.federation.core.wstrust.SamlCredential;
+import javax.xml.ws.handler.MessageContext;
 
 /**
  * <p>implementation for {@link AbstractSAML2Handler} specific for the JBoss AS7 binding.</p>
@@ -45,8 +46,8 @@ public class SAML2Handler extends AbstractSAML2Handler {
      * @see org.picketlink.trust.jbossws.handler.AbstractSAML2Handler#propagateSubject(org.picketlink.identity.federation.core.wstrust.SamlCredential, javax.security.auth.Subject, java.security.Principal)
      */
     @Override
-    protected void createSecurityContext(SamlCredential credential,final  Subject theSubject, final Principal principal) {
-        super.createSecurityContext(credential, theSubject, principal);
+    protected void createSecurityContext(SamlCredential credential,final  Subject theSubject, final Principal principal, final MessageContext msgContext) {
+        super.createSecurityContext(credential, theSubject, principal, msgContext);
         org.apache.cxf.security.SecurityContext secContext = createCXFSecurityContext(theSubject, principal);
         
         if (PhaseInterceptorChain.getCurrentMessage() != null) {
@@ -59,6 +60,7 @@ public class SAML2Handler extends AbstractSAML2Handler {
      * 
      * @param theSubject
      * @param principal
+     * @return
      * @return
      */
     private SecurityContext createCXFSecurityContext(final Subject theSubject, final Principal principal) {

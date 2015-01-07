@@ -45,6 +45,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.junit.Test;
+import org.picketlink.common.exceptions.ConfigurationException;
 import org.picketlink.identity.federation.core.util.SOAPUtil;
 import org.picketlink.trust.jbossws.handler.AbstractSAML2Handler;
 
@@ -87,6 +88,10 @@ public class SAML2HandlerUnitTestCase {
             return super.handleInbound(msgContext);
         }
 
+        @Override
+        protected String getSecurityDomainName(MessageContext msgContext) throws ConfigurationException {
+            return "other";
+        }
     }
 
     private static class SAML2HandlerUnitTestCaseMessageContext implements SOAPMessageContext {

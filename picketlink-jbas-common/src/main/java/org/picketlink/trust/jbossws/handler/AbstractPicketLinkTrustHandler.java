@@ -22,6 +22,7 @@
 package org.picketlink.trust.jbossws.handler;
 
 import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityContextAssociation;
 import org.picketlink.common.PicketLinkLogger;
 import org.picketlink.common.PicketLinkLoggerFactory;
 import org.picketlink.common.exceptions.ConfigurationException;
@@ -105,7 +106,13 @@ public abstract class AbstractPicketLinkTrustHandler<C extends LogicalMessageCon
             InputStream is = null;
 
             try {
-                is = getJBossWeb(getServletContext(msgContext));
+                ServletContext servletContext = getServletContext(msgContext);
+                if (servletContext == null) {
+                    securityDomainName = SecurityContextAssociation.getSecurityContext().getSecurityDomain();
+                    return securityDomainName;
+                } else {
+                    is = getJBossWeb(getServletContext(msgContext));
+                }
 
                 if (is != null) {
                     Document document = DocumentUtil.getDocument(is);
@@ -113,6 +120,7 @@ public abstract class AbstractPicketLinkTrustHandler<C extends LogicalMessageCon
                             new javax.xml.namespace.QName("security-domain")).getTextContent();
                 }
             } catch (Exception e) {
+                logger.info(e.toString());
             } finally {
                 try {
                     if (is != null) {

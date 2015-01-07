@@ -44,7 +44,7 @@ import org.picketlink.identity.federation.bindings.jboss.subject.PicketLinkGroup
  * @version $Revision: 1 $
  */
 class SecurityActions {
-    static SecurityContext createSecurityContext(final Principal p, final Object cred, final Subject subject) {
+    static SecurityContext createSecurityContext(final Principal p, final Object cred, final Subject subject, final String securityDomain) {
         SecurityManager sm = System.getSecurityManager();
         
         if (sm != null) {
@@ -52,7 +52,7 @@ class SecurityActions {
                 public SecurityContext run() {
                     SecurityContext sc = null;
                     try {
-                        sc = SecurityContextFactory.createSecurityContext(p, cred, subject, "SAML2_HANDLER");
+                        sc = SecurityContextFactory.createSecurityContext(p, cred, subject, securityDomain);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -62,7 +62,7 @@ class SecurityActions {
         } else {
             SecurityContext sc = null;
             try {
-                sc = SecurityContextFactory.createSecurityContext(p, cred, subject, "SAML2_HANDLER");
+                sc = SecurityContextFactory.createSecurityContext(p, cred, subject, securityDomain);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

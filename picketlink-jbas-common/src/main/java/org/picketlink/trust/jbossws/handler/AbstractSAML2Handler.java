@@ -34,6 +34,7 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import org.jboss.security.SecurityContext;
 import org.picketlink.common.constants.JBossSAMLURIConstants;
+import org.picketlink.common.exceptions.ConfigurationException;
 import org.picketlink.common.util.StringUtil;
 import org.picketlink.identity.federation.bindings.jboss.subject.PicketLinkPrincipal;
 import org.picketlink.identity.federation.core.saml.v2.interfaces.SAML2Handler;
@@ -98,7 +99,7 @@ public abstract class AbstractSAML2Handler extends AbstractPicketLinkTrustHandle
             Subject theSubject = new Subject();
             PicketLinkPrincipal principal = new PicketLinkPrincipal(username);
 
-            createSecurityContext(credential, theSubject, principal);
+            createSecurityContext(credential, theSubject, principal, msgContext);
             
             if (assertionType != null) {
                 List<String> roleKeys = new ArrayList<String>();
@@ -130,10 +131,15 @@ public abstract class AbstractSAML2Handler extends AbstractPicketLinkTrustHandle
      * @param credential
      * @param theSubject
      * @param principal
+     * @param msgContext
      */
-    protected void createSecurityContext(SamlCredential credential, Subject theSubject, Principal principal) {
-        SecurityContext sc = SecurityActions.createSecurityContext(principal, credential, theSubject);
-        SecurityActions.setSecurityContext(sc);
+    protected void createSecurityContext(SamlCredential credential, Subject theSubject, Principal principal, MessageContext msgContext) {
+        try {
+            SecurityContext sc = SecurityActions.createSecurityContext(principal, credential, theSubject, getSecurityDomainName(msgContext));
+            SecurityActions.setSecurityContext(sc);
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

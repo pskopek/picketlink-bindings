@@ -89,8 +89,12 @@ public abstract class AbstractWSAuthenticationHandler extends AbstractPicketLink
 
         logger.trace("Successfully Authenticated:Principal = " + principal + "  ::subject = " + subject);
 
-        SecurityContext sc = SecurityActions.createSecurityContext(principal, credential, subject);
-        SecurityActions.setSecurityContext(sc);
+        try {
+            SecurityContext sc = SecurityActions.createSecurityContext(principal, credential, subject, getSecurityDomainName(msgContext));
+            SecurityActions.setSecurityContext(sc);
+        } catch (ConfigurationException e) {
+            throw new RuntimeException(e);
+        }
 
         return true;
     }
