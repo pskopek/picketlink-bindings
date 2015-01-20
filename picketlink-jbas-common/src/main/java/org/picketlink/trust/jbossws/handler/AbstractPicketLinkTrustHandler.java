@@ -22,6 +22,7 @@
 package org.picketlink.trust.jbossws.handler;
 
 import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.picketlink.common.PicketLinkLogger;
 import org.picketlink.common.PicketLinkLoggerFactory;
@@ -102,25 +103,30 @@ public abstract class AbstractPicketLinkTrustHandler<C extends LogicalMessageCon
      * @throws ConfigurationException if no security domain is configured.
      */
     protected String getSecurityDomainName(MessageContext msgContext) throws ConfigurationException {
-        if (this.securityDomainName == null) {
+        if (securityDomainName == null) {
             InputStream is = null;
 
             try {
-                ServletContext servletContext = getServletContext(msgContext);
-                if (servletContext == null) {
-                    securityDomainName = SecurityContextAssociation.getSecurityContext().getSecurityDomain();
-                    return securityDomainName;
-                } else {
-                    is = getJBossWeb(getServletContext(msgContext));
-                }
 
-                if (is != null) {
-                    Document document = DocumentUtil.getDocument(is);
-                    securityDomainName = DocumentUtil.getChildElement(document.getDocumentElement(),
-                            new javax.xml.namespace.QName("security-domain")).getTextContent();
+                SecurityContext sc = SecurityContextAssociation.getSecurityContext();
+                if (sc != null) {
+                    securityDomainName = sc.getSecurityDomain();
+                } else {
+                    ServletContext servletContext = getServletContext(msgContext);
+                    if (servletContext != null) {
+                        is = getJBossWeb(servletContext);
+                        if (is != null) {
+                            Document document = DocumentUtil.getDocument(is);
+                            securityDomainName = DocumentUtil.getChildElement(document.getDocumentElement(),
+                                    new javax.xml.namespace.QName("security-domain")).getTextContent();
+                        }
+                    } else {
+                        // when no SecurityContext is associated with current thread (client or server side) use default domain
+                        securityDomainName = SecurityConstants.DEFAULT_APPLICATION_POLICY;
+                    }
                 }
             } catch (Exception e) {
-                logger.info(e.toString());
+                logger.error(e);
             } finally {
                 try {
                     if (is != null) {
@@ -131,11 +137,11 @@ public abstract class AbstractPicketLinkTrustHandler<C extends LogicalMessageCon
             }
         }
 
-        if (this.securityDomainName == null) {
+        if (securityDomainName == null) {
             throw logger.securityDomainNotFound();
         }
 
-        return this.securityDomainName;
+        return securityDomainName;
     }
 
     /**
