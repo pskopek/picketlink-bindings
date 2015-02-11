@@ -111,6 +111,7 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -149,6 +150,8 @@ import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 public abstract class AbstractIDPValve extends ValveBase {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
+
+    private static final String IDP_SESSION_USER = "org.picketlink.idp.session.user";
 
     protected boolean enableAudit = false;
 
@@ -381,8 +384,10 @@ public abstract class AbstractIDPValve extends ValveBase {
             }
         }
 
-        if (isAjaxRequest(request) && userPrincipal == null) {
-            response.sendError(Response.SC_FORBIDDEN);
+        HttpSession session = request.getSession();
+
+        if (isAjaxRequest(request) && session.getAttribute(IDP_SESSION_USER) == null) {
+            response.sendError(403);
             return;
         }
 
@@ -392,6 +397,10 @@ public abstract class AbstractIDPValve extends ValveBase {
 
         // we only handle SAML messages for authenticated users.
         if (userPrincipal != null) {
+            if (session.getAttribute(IDP_SESSION_USER) == null) {
+                session.setAttribute(IDP_SESSION_USER, userPrincipal);
+            }
+
             handleSAMLMessage(request, response);
         }
     }
@@ -822,9 +831,9 @@ public abstract class AbstractIDPValve extends ValveBase {
                 session.getSession().setAttribute(GeneralConstants.ROLES_ID, roles);
 
                 Map<String, Object> attribs = this.attribManager.getAttributes(
-                                     passUserPrincipalToAttributeManager == true 
-                                         ?  request.getUserPrincipal() 
-                                         : userPrincipal, 
+                                     passUserPrincipalToAttributeManager == true
+                                         ?  request.getUserPrincipal()
+                                         : userPrincipal,
                                      attributeKeys);
                 requestOptions.put(GeneralConstants.ATTRIBUTES, attribs);
             }
