@@ -22,14 +22,6 @@
 
 package org.picketlink.identity.federation;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-
-import javax.security.auth.login.LoginException;
-import javax.xml.crypto.dsig.XMLSignatureException;
-import javax.xml.stream.Location;
-import javax.xml.ws.WebServiceException;
-
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -46,6 +38,13 @@ import org.picketlink.common.exceptions.fed.IssuerNotTrustedException;
 import org.picketlink.common.exceptions.fed.SignatureValidationException;
 import org.picketlink.common.exceptions.fed.WSTrustException;
 import org.w3c.dom.Element;
+
+import javax.security.auth.login.LoginException;
+import javax.xml.crypto.dsig.XMLSignatureException;
+import javax.xml.stream.Location;
+import javax.xml.ws.WebServiceException;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -515,26 +514,31 @@ public interface PicketLinkMessages {
 
     @Message(id = 181, value = "Cannot get free client pool key: %s")
     RuntimeException cannotGetFreeClientPoolKey(String key);
-    
+
     @Message(id = 182, value = "Cannot get STS config by key:  %s")
     RuntimeException cannotGetSTSConfigByKey(String key);
-    
+
     @Message(id = 183, value = "Cannot get used clients by key:  %s")
     RuntimeException cannotGetUsedClientsByKey(String key);
-    
+
     @Message(id = 184, value = "Free pool already contains given key:  %s")
     RuntimeException freePoolAlreadyContainsGivenKey(String key);
-    
+
     @Message(id = 185, value = "removing non existing client from used clients by key: %s")
-    RuntimeException removingNonExistingClientFromUsedClientsByKey(String key); 
-    
+    RuntimeException removingNonExistingClientFromUsedClientsByKey(String key);
+
     @Message(id = 186, value = "Pool reached miximum number of clients within the pool (%s)")
     RuntimeException maximumNumberOfClientsReachedforPool(String max);
-    
+
     @Message(id = 187, value = "Cannot set maximum STS client pool size to negative number (%s)")
     RuntimeException cannotSetMaxPoolSizeToNegative(String max);
-    
+
     @Message(id = 188, value = "Parser feature %s not supported.")
     RuntimeException parserFeatureNotSupported(String feature);
 
+    @Message(id = 189, value = "KeyStoreKeyManager : Encryption Key Pass is null")
+    RuntimeException keyStoreNullEncryptionKeyPass();
+
+    @Message(id = 190, value = "Wrong audience [%s]")
+    ProcessingException samlAssertionWrongAudience(String serviceURL);
 }

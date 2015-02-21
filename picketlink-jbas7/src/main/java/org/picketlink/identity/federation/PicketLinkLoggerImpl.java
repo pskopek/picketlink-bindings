@@ -40,7 +40,6 @@ import javax.security.auth.login.LoginException;
 import javax.xml.crypto.dsig.XMLSignatureException;
 import javax.xml.stream.Location;
 import javax.xml.ws.WebServiceException;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
@@ -1602,7 +1601,7 @@ public final class PicketLinkLoggerImpl implements PicketLinkLogger {
     public IllegalStateException datasourceIsNull() {
         return MESSAGES.datasourceIsNull();
     }
-    
+
     public IllegalArgumentException cannotParseParameterValue(String parameter, Throwable e) {
         return MESSAGES.cannotParseParameterError(parameter , e);
     }
@@ -1637,5 +1636,10 @@ public final class PicketLinkLoggerImpl implements PicketLinkLogger {
 
     public RuntimeException parserFeatureNotSupported(String feature) {
         return MESSAGES.parserFeatureNotSupported(feature);
+    }
+
+    @Override
+    public ProcessingException samlAssertionWrongAudience(String serviceURL) {
+        return MESSAGES.samlAssertionWrongAudience(serviceURL);
     }
 }
