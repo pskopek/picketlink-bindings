@@ -96,8 +96,6 @@ import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 public abstract class BaseFormAuthenticator extends FormAuthenticator {
     protected static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
 
-    public static final String DESIRED_IDP = "picketlink.desired.idp";
-
     protected boolean enableAudit = false;
     protected PicketLinkAuditHelper auditHelper = null;
 

@@ -659,7 +659,7 @@ public abstract class AbstractSPFormAuthenticator extends BaseFormAuthenticator 
                 baseProcessor.setIssuer(issuerID);
 
             // If the user has a different desired idp
-            String idp = (String) request.getAttribute(DESIRED_IDP);
+            String idp = (String) request.getAttribute(org.picketlink.identity.federation.web.constants.GeneralConstants.DESIRED_IDP);
             if (StringUtil.isNotNull(idp)) {
                 baseProcessor.setIdentityURL(idp);
             } else {
